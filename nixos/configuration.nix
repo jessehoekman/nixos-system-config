@@ -86,21 +86,28 @@
     };
   };
 
-  services.xserver = {
-    enable = true;
-    displayManager = {
-      gdm.enable = true;
-      autoLogin = {
-        enable = true;
-        user = "jesse";
+
+  services = {
+    xserver = {
+      enable = true;
+      displayManager = {
+        gdm = {
+          enable = true;
+        };
+        autoLogin = {
+          enable = true;
+          user = "jesse";
+        };
+      };
+      desktopManager.gnome.enable = true;
+      xkb =
+      {
+        variant = "";
+        layout = "us";
       };
     };
-    desktopManager.gnome.enable = true;
-    xkb = {
-      layout = "us";
-      variant = "";
-    };
   };
+
 
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
@@ -120,7 +127,7 @@
       # If you do, you can skip setting a root password by passing '--no-root-passwd' to nixos-install.
       # Be sure to change it (using passwd) after rebooting!
       isNormalUser = true;
-      extraGroups = ["wheel", "networkmanager"];
+      extraGroups = ["wheel""networkmanager"];
       initialPassword = "password";
     }; # test
   };
