@@ -122,7 +122,7 @@
       isNormalUser = true;
       extraGroups = ["wheel", "networkmanager"];
       initialPassword = "password";
-    };
+    }; # test
   };
 
   environment.systemPackages = with pkgs; [
