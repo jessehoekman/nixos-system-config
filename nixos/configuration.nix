@@ -51,7 +51,6 @@
       allowedTCPPorts = [ 22 ]; # Allow SSH
     };
   };
-  };
 
   time.timeZone = "Europe/Amsterdam";
 

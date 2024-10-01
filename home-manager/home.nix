@@ -56,6 +56,11 @@
       # System Monitoring
       htop
       iotop
+
+      # Appearance
+      lxappearance
+      qt5ct
+      gnome.gnome-tweaks
     ];
   };
 
@@ -91,16 +96,64 @@
   # Kitty
   programs.kitty = {
     enable = true;
-    theme = "Solarized Dark";  # You can choose a different theme
+    theme = "Catppuccin-Latte";
     font = {
-      name = "JetBrains Mono";
+      name = "JetBrains Mono Nerd Font";
       size = 12;
     };
     settings = {
       background_opacity = "0.95";
       enable_audio_bell = false;
+      window_padding_width = 8;
+      tab_bar_style = "powerline";
+      cursor_shape = "beam";
+      cursor_blink_interval = "0.5";
+      scrollback_lines = 10000;
+      confirm_os_window_close = 0;
     };
   };
+
+  # GTK Theme
+  gtk = {
+    enable = true;
+    theme = {
+      name = "Catppuccin-Latte-Standard-Blue-Light";
+      package = pkgs.catppuccin-gtk.override {
+        accents = [ "blue" ];
+        size = "standard";
+        tweaks = [ "normal" ];
+        variant = "latte";
+      };
+    };
+    iconTheme = {
+      name = "Papirus-Light";
+      package = pkgs.papirus-icon-theme;
+    };
+    font = {
+      name = "Noto Sans";
+      size = 10;
+    };
+  };
+
+  # Qt Theme
+  qt = {
+    enable = true;
+    # Updated platformTheme syntax
+    platformTheme = {
+      name = "gtk";
+    };
+    style = {
+      name = "kvantum";
+    };
+  };
+
+    # Cursor Theme
+  home.pointerCursor = {
+    name = "Catppuccin-Latte-Light-Cursors";
+    package = pkgs.catppuccin-cursors.latteLight;
+    size = 16;
+  };
+
 
 
   programs.bash.enable = true;
