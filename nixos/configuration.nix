@@ -1,24 +1,17 @@
-{
-  inputs,
-  lib,
-  config,
-  pkgs,
-  ...
-}: {
-  imports = [
+{ inputs, lib, config, pkgs, ... }:
 
+{
+  # Import other configuration files
+  imports = [
+    ./hardware-configuration.nix
     # You can also split up your configuration and import pieces of it here:
     # ./users.nix
-
-    ./hardware-configuration.nix
   ];
 
-  nixpkgs = {
-    config = {
-      allowUnfree = true;
-    };
-  };
+  # Nixpkgs configuration
+  nixpkgs.config.allowUnfree = true;
 
+  # Nix configuration
   nix = let
     flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
   in {
@@ -31,18 +24,19 @@
     };
     # Opinionated: disable channels
     channel.enable = false;
-
     # Opinionated: make flake registry and nix path match flake inputs
-    registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
+    registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
+  # Boot configuration
   boot.loader.grub = {
     enable = true;
     device = "/dev/sdb";
     useOSProber = false;
   };
 
+  # Networking
   networking = {
     hostName = "nixos";
     networkmanager.enable = true;
@@ -52,8 +46,8 @@
     };
   };
 
+  # Time and localization
   time.timeZone = "Europe/Amsterdam";
-
   i18n = {
     defaultLocale = "en_GB.UTF-8";
     extraLocaleSettings = {
@@ -69,15 +63,12 @@
     };
   };
 
+  # Consolidated services configuration
   services = {
     xserver = {
       enable = true;
       displayManager = {
         gdm.enable = true;
-        autoLogin = {
-          enable = true;
-          user = "jesse";
-        };
       };
       desktopManager.gnome.enable = true;
       xkb = {
@@ -85,52 +76,93 @@
         layout = "us";
       };
     };
-  };
 
-  services.openssh = {
-    enable = true;
-    settings = {
-      PermitRootLogin = "no";
-      PasswordAuthentication = false;
+    # Move autoLogin configuration here
+    displayManager.autoLogin = {
+      enable = true;
+      user = "jesse";
     };
+
+    openssh = {
+      enable = true;
+      settings = {
+        PermitRootLogin = "no";
+        PasswordAuthentication = false;
+      };
+    };
+
+    printing.enable = true;
+
+    pipewire = {
+      enable = true;
+      alsa = {
+        enable = true;
+        support32Bit = true;
+      };
+      pulse.enable = true;
+    };
+
+    blueman.enable = true;
   };
 
+  # Add this to clean up old channel directories
+  system.activationScripts.cleanupNixChannels = ''
+    echo "Cleaning up Nix channels..."
+    rm -rf /root/.nix-defexpr/channels
+    rm -rf /nix/var/nix/profiles/per-user/root/channels
+    rm -rf /home/jesse/.nix-defexpr/channels
+  '';
 
+  # Disable getty services
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
 
-  services.printing.enable = true;
-
+  # Security
   security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
+
+  # User configuration
+  users.users.jesse = {
+    isNormalUser = true;
+    shell = pkgs.zsh;
+    extraGroups = [ "wheel" "networkmanager" ];
+    initialPassword = "password";
   };
 
-  users.users = {
-    jesse = {
-      isNormalUser = true;
-      shell = pkgs.zsh;
-      extraGroups = ["wheel""networkmanager"];
-      initialPassword = "password";
-    };
-  };
-
+  # System packages
   environment.systemPackages = with pkgs; [
     vscode
     git
     zsh
     kitty
+    bluez
+    pavucontrol
+    bluez-tools
   ];
 
-  programs.firefox.enable = true;
-  programs.steam.enable = true;
-  programs.zsh.enable = true;
+  # Bluetooth configuration
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+    settings = {
+      General = {
+        Enable = "Source,Sink,Media,Socket";
+        Experimental = true; # For battery reporting
+      };
+    };
+  };
 
+  # Additional program configurations
+  programs = {
+    gnome-terminal.enable = false;
+    firefox.enable = true;
+    steam.enable = true;
+    zsh.enable = true;
+  };
+
+  # Environment variables
   environment.variables.TERMINAL = "kitty";
 
+  # System state version
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "24.05";
 }

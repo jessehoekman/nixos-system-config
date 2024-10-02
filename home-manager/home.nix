@@ -87,6 +87,10 @@
       cat = "bat";
       gs = "git status";
       gp = "git push";
+      hs = "home-manager --flake .#jesse@nixos switch";
+      ns = "sudo nixos-rebuild switch --flake .#nixos";
+      nc = "cd ~/Documents/nix-config";
+      s = "source ~/.zshrc"
     };
     initExtra = ''
       eval "$(zoxide init zsh)"
