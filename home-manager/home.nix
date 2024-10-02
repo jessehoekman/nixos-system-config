@@ -34,7 +34,6 @@
       pyenv
       poetry
 
-
       # Terminal & Shell Tools
       zsh
       oh-my-zsh
@@ -60,7 +59,7 @@
       # Appearance
       lxappearance
       qt5ct
-      gnome.gnome-tweaks
+      gnome-tweaks
     ];
   };
 
@@ -90,7 +89,8 @@
       hs = "home-manager --flake .#jesse@nixos switch";
       ns = "sudo nixos-rebuild switch --flake .#nixos";
       nc = "cd ~/Documents/nix-config";
-      s = "source ~/.zshrc"
+      s = "source ~/.zshrc";
+      c = "clear";
     };
     initExtra = ''
       eval "$(zoxide init zsh)"
@@ -100,13 +100,13 @@
   # Kitty
   programs.kitty = {
     enable = true;
-    theme = "Catppuccin-Latte";
+    themeFile = "Espresso";
     font = {
       name = "JetBrains Mono Nerd Font";
       size = 12;
     };
     settings = {
-      background_opacity = "0.95";
+      background_opacity = "1";
       enable_audio_bell = false;
       window_padding_width = 8;
       tab_bar_style = "powerline";

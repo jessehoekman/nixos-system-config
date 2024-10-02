@@ -17,6 +17,7 @@
   in {
     settings = {
       experimental-features = "nix-command flakes";
+      warn-dirty = false;
       # Opinionated: disable global registry
       flake-registry = "";
       # Workaround for https://github.com/NixOS/nix/issues/9574
@@ -29,7 +30,7 @@
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
-  # Boot configuration
+  # Boot configuration #
   boot.loader.grub = {
     enable = true;
     device = "/dev/sdb";
@@ -127,6 +128,19 @@
     extraGroups = [ "wheel" "networkmanager" ];
     initialPassword = "password";
   };
+
+  security.sudo = {
+  enable = true;
+  extraRules = [{
+    users = [ "jesse" ];
+    commands = [
+      {
+        command = "/run/current-system/sw/bin/nixos-rebuild switch --flake .#nixos";
+        options = [ "NOPASSWD" ];
+      }
+    ];
+  }];
+};
 
   # System packages
   environment.systemPackages = with pkgs; [
