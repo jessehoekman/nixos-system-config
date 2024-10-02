@@ -1,4 +1,10 @@
-{ inputs, lib, config, pkgs, ... }:
+{
+  inputs,
+  lib,
+  config,
+  pkgs,
+  ...
+}:
 
 {
   # Import other configuration files
@@ -12,23 +18,25 @@
   nixpkgs.config.allowUnfree = true;
 
   # Nix configuration
-  nix = let
-    flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
-  in {
-    settings = {
-      experimental-features = "nix-command flakes";
-      warn-dirty = false;
-      # Opinionated: disable global registry
-      flake-registry = "";
-      # Workaround for https://github.com/NixOS/nix/issues/9574
-      nix-path = config.nix.nixPath;
+  nix =
+    let
+      flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
+    in
+    {
+      settings = {
+        experimental-features = "nix-command flakes";
+        warn-dirty = false;
+        # Opinionated: disable global registry
+        flake-registry = "";
+        # Workaround for https://github.com/NixOS/nix/issues/9574
+        nix-path = config.nix.nixPath;
+      };
+      # Opinionated: disable channels
+      channel.enable = false;
+      # Opinionated: make flake registry and nix path match flake inputs
+      registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
+      nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
     };
-    # Opinionated: disable channels
-    channel.enable = false;
-    # Opinionated: make flake registry and nix path match flake inputs
-    registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
-    nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
-  };
 
   # Boot configuration #
   boot.loader.grub = {
@@ -71,7 +79,13 @@
       displayManager = {
         gdm.enable = true;
       };
-      desktopManager.gnome.enable = true;
+      desktopManager.gnome = {
+        enable = true;
+        extraGSettingsOverrides = ''
+          [org.gnome.desktop.background]
+          picture-uri='file///home/jesse/Pictures/Cattpucin_BG.jpg'
+        '';
+      };
       xkb = {
         variant = "";
         layout = "us";
@@ -125,22 +139,27 @@
   users.users.jesse = {
     isNormalUser = true;
     shell = pkgs.zsh;
-    extraGroups = [ "wheel" "networkmanager" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+    ];
     initialPassword = "password";
   };
 
   security.sudo = {
-  enable = true;
-  extraRules = [{
-    users = [ "jesse" ];
-    commands = [
+    enable = true;
+    extraRules = [
       {
-        command = "/run/current-system/sw/bin/nixos-rebuild switch --flake .#nixos";
-        options = [ "NOPASSWD" ];
+        users = [ "jesse" ];
+        commands = [
+          {
+            command = "/run/current-system/sw/bin/nixos-rebuild switch --flake .#nixos";
+            options = [ "NOPASSWD" ];
+          }
+        ];
       }
     ];
-  }];
-};
+  };
 
   # System packages
   environment.systemPackages = with pkgs; [
@@ -151,6 +170,8 @@
     bluez
     pavucontrol
     bluez-tools
+    nixfmt-rfc-style
+    telegram-desktop
   ];
 
   # Bluetooth configuration
