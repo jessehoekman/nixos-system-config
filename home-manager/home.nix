@@ -1,10 +1,4 @@
-{
-  inputs,
-  lib,
-  config,
-  pkgs,
-  ...
-}: {
+{ inputs, lib, config, pkgs, ... }: {
   imports = [
     # If you want to use home-manager modules from other flakes (such as nix-colors):
     # inputs.nix-colors.homeManagerModule
@@ -29,6 +23,10 @@
       vscode
       git
       steam
+
+      # Nix tools
+      nil
+      nixfmt-rfc-style
 
       # Python Dev
       pyenv
@@ -60,6 +58,7 @@
       lxappearance
       qt5ct
       gnome-tweaks
+
     ];
   };
 
@@ -87,7 +86,7 @@
       gs = "git status";
       gp = "git push";
       hs = "home-manager --flake .#jesse@nixos switch";
-      ns = "sudo nixos-rebuild switch --flake .#nixos";
+      ns = "sudo nixos-rebuild switch --flake .#nixos && source ~/.zshrc";
       nc = "cd ~/Documents/nix-config";
       s = "source ~/.zshrc";
       c = "clear";
@@ -100,7 +99,7 @@
   # Kitty
   programs.kitty = {
     enable = true;
-    themeFile = "Espresso";
+    themeFile = "Catppuccin-Mocha";
     font = {
       name = "JetBrains Mono Nerd Font";
       size = 12;
@@ -143,22 +142,16 @@
   qt = {
     enable = true;
     # Updated platformTheme syntax
-    platformTheme = {
-      name = "gtk";
-    };
-    style = {
-      name = "kvantum";
-    };
+    platformTheme = { name = "gtk"; };
+    style = { name = "kvantum"; };
   };
 
-    # Cursor Theme
+  # Cursor Theme
   home.pointerCursor = {
     name = "Catppuccin-Latte-Light-Cursors";
     package = pkgs.catppuccin-cursors.latteLight;
     size = 16;
   };
-
-
 
   programs.bash.enable = true;
   targets.genericLinux.enable = true;
@@ -168,8 +161,6 @@
     enable = true;
     nix-direnv.enable = true;
   };
-
-
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
