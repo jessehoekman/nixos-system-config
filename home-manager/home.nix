@@ -44,7 +44,6 @@
       ripgrep
       eza
       bat
-      neofetch
       nix-zsh-completions
       zsh-autosuggestions
       zsh-syntax-highlighting
@@ -79,8 +78,21 @@
       catppuccin-kvantum
       papirus-icon-theme
 
+      # Additional recommended dependencies
+      git
+      gcc # For TreeSitter
+
+      # Fonts
+      (nerdfonts.override {
+        fonts = [
+          "JetBrainsMono"
+        ];
+      })
     ];
   };
+
+  # This is new: set fonts in home.fonts
+  fonts.fontconfig.enable = true;
 
   programs.home-manager.enable = true;
 
@@ -89,6 +101,38 @@
     enable = true;
     userName = "Jesse Hoekman";
     userEmail = "jessehoekman@hotmail.com";
+  };
+
+  programs.neovim = {
+    enable = true;
+    viAlias = true;
+    vimAlias = true;
+    vimdiffAlias = true;
+    withNodeJs = true;
+    plugins = with pkgs.vimPlugins; [
+      lazy-nvim
+      which-key-nvim
+      nvim-treesitter.withAllGrammars
+    ];
+    extraLuaConfig = ''
+      vim.g.mapleader = " " -- Need to set leader before lazy for correct keybindings
+      require("lazy").setup({
+        performance = {
+          reset_packpath = false,
+          rtp = {
+            reset = false,
+          }
+        },
+        install = {
+          -- Safeguard in case we forget to install a plugin with Nix
+          missing = false,
+        },
+        spec = {
+          -- Import plugins from lua/plugins
+          { import = "plugins" },
+        },
+      })
+    '';
   };
 
   # Zsh
@@ -153,15 +197,11 @@
       export THEFUCK_ALTER_HISTORY=true
 
       # Initialize Oh My Posh
-      eval "$(oh-my-posh init zsh --config ${config.xdg.configHome}/oh-my-posh/catppuccin_mocha.omp.json)"
-
-      # Initialize neofetch with custom config
-      neofetch --config ~/.config/neofetch/config.conf
+      #eval "$(oh-my-posh init zsh --config ${config.xdg.configHome}/oh-my-posh/catppuccin_mocha.omp.json)"
     '';
   };
 
-  xdg.configFile."oh-my-posh/catppuccin_mocha.omp.json".source = /home/jesse/Documents/nix-config/home-manager/catppuccin.omp.json;
-  xdg.configFile."neofetch/config.conf".source = /home/jesse/Documents/nix-config/neofetch/config.conf;
+  #xdg.configFile."oh-my-posh/catppuccin_mocha.omp.json".source = ./home-manager/catppuccin.omp.json;
 
   # Kitty
   programs.kitty = {
