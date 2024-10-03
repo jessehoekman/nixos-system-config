@@ -105,32 +105,43 @@
 
   programs.neovim = {
     enable = true;
-    viAlias = true;
+    package = pkgs.neovim-unwrapped;
     vimAlias = true;
     vimdiffAlias = true;
     withNodeJs = true;
+
     plugins = with pkgs.vimPlugins; [
       lazy-nvim
-      which-key-nvim
-      nvim-treesitter.withAllGrammars
     ];
-    extraLuaConfig = ''
-      vim.g.mapleader = " " -- Need to set leader before lazy for correct keybindings
+
+    extraPackages = with pkgs; [
+      gcc # For TreeSitter
+    ];
+  };
+
+  xdg.configFile = {
+    "nvim/init.lua".text = ''
+      -- bootstrap lazy.nvim, LazyVim and your plugins
+      require("config.lazy")
+    '';
+
+    "nvim/lua/config/lazy.lua".text = ''
+      local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+      if not vim.loop.fs_stat(lazypath) then
+        vim.fn.system({ "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath })
+      end
+      vim.opt.rtp:prepend(vim.env.LAZY or lazypath)
+
       require("lazy").setup({
-        performance = {
-          reset_packpath = false,
-          rtp = {
-            reset = false,
-          }
-        },
-        install = {
-          -- Safeguard in case we forget to install a plugin with Nix
-          missing = false,
-        },
         spec = {
-          -- Import plugins from lua/plugins
-          { import = "plugins" },
+          { "LazyVim/LazyVim", import = "lazyvim.plugins" },
         },
+        defaults = {
+          lazy = false,
+          version = false,
+        },
+        install = { colorscheme = { "tokyonight", "habamax" } },
+        checker = { enabled = true },
       })
     '';
   };
